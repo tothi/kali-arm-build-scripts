@@ -4,6 +4,7 @@
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
 # With nexmon for native monitor mode: https://github.com/seemoo-lab/nexmon/
 # Possibly needs: apt-get install gcc-multilib
+# patched to build on other distros than Kali (e.g. tested on Gentoo)
 # Maintained by @binkybear
 
 if [[ $# -eq 0 ]] ; then
@@ -45,10 +46,24 @@ mirror=http.kali.org
 mkdir -p ${basedir}
 cd ${basedir}
 
-# create the rootfs - not much to modify here, except maybe the hostname.
-debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali
+# fetch the latest kali-rollig debootstrap script
+# (in order to work with other distros than kali)
+curl -s 'http://git.kali.org/gitweb/?p=packages/debootstrap.git;a=blob_plain;f=scripts/kali;hb=refs/heads/kali/master' > kali-debootstrap
 
-cp /usr/bin/qemu-arm-static kali-$architecture/usr/bin/
+# create the rootfs - not much to modify here, except maybe the hostname.
+#debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali
+
+# use the downloaded kali-debootstrap script
+debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali ./kali-debootstrap
+rm -f ./kali-debootstrap
+
+# check for /usr/local/bin too, and register binfmt arm (if not registered)
+cp /usr/bin/qemu-arm-static kali-$architecture/usr/bin/ || \
+    ( mkdir -p kali-$architecture/usr/local/bin ; \
+      cp /usr/local/bin/qemu-arm-static kali-$architecture/usr/local/bin/ ; \
+      [ -f /proc/sys/fs/binfmt_misc/arm ] ||\
+	  echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/local/bin/qemu-arm-static:' > /proc/sys/fs/binfmt_misc/register
+    )
 
 LANG=C chroot kali-$architecture /debootstrap/debootstrap --second-stage
 cat << EOF > kali-$architecture/etc/apt/sources.list
@@ -245,8 +260,6 @@ cd ${TOPDIR}
 git clone --depth 1 https://github.com/seemoo-lab/nexmon.git ${basedir}/root/opt/nexmon
 mkdir -p ${basedir}/root/opt/nexmon/firmware/
 touch .scmversion
-export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf-
 
 # RPI Firmware
 git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
@@ -264,12 +277,19 @@ cd ${TOPDIR}
 git clone --depth 1 https://github.com/nethunteros/re4son-raspberrypi-linux.git -b rpi-4.4.y-nexutil ${basedir}/root/usr/src/kernel
 cd ${basedir}/root/usr/src/kernel
 
-ln -s /usr/include/asm-generic /usr/include/asm
+# fix (dont symlink if exists)
+[ -d /usr/include/asm ] || ln -s /usr/include/asm-generic /usr/include/asm
 
 # Set default defconfig
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- re4son_pi2_defconfig
+
+# patch CROSS_COMPILE (e.g. for gentoo)
+[ -x /usr/bin/armv7a-hardfloat-linux-gnueabi-gcc ] &&\
+    export CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-
+
+#make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- re4son_pi2_defconfig
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} re4son_pi2_defconfig
 
 # Build kernel
 make -j $(grep -c processor /proc/cpuinfo)
@@ -284,7 +304,8 @@ cp arch/arm/boot/dts/overlays/*.dtb* ${basedir}/bootp/overlays/
 cp arch/arm/boot/dts/overlays/README ${basedir}/bootp/overlays/
 
 # Make firmware and headers
-make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- firmware_install INSTALL_MOD_PATH=${basedir}/root
+#make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- firmware_install INSTALL_MOD_PATH=${basedir}/root
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} firmware_install INSTALL_MOD_PATH=${basedir}/root
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
