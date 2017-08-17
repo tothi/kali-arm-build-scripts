@@ -571,10 +571,10 @@ echo "Clean up the build system"
 rm -rf ${basedir}/kernel ${basedir}/bootp ${basedir}/root ${basedir}/kali-$architecture ${basedir}/patches ${basedir}/u-boot
 
 # If you're building an image for yourself, comment all of this out, as you
-# don't need the sha1sum or to compress the image, since you will be testing it
+# don't need the sha256sum or to compress the image, since you will be testing it
 # soon.
-echo "Generating sha1sum for kali-$1-odroidc2.img"
-sha1sum kali-$1-odroidc2.img > ${basedir}/kali-$1-odroidc2.img.sha1sum
+echo "Generating sha256sum for kali-$1-odroidc2.img"
+sha256sum kali-$1-odroidc2.img > ${basedir}/kali-$1-odroidc2.img.sha256sum
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
@@ -582,6 +582,6 @@ echo "Compressing kali-$1-odroidc2.img"
 pixz ${basedir}/kali-$1-odroidc2.img ${basedir}/kali-$1-odroidc2.img.xz
 echo "Deleting kali-$1-odroidc2.img"
 rm ${basedir}/kali-$1-odroidc2.img
-echo "Generating sha1sum for kali-$1-odroidc2.img"
-sha1sum kali-$1-odroidc2.img.xz > ${basedir}/kali-$1-odroidc2.img.xz.sha1sum
+echo "Generating sha256sum for kali-$1-odroidc2.img"
+sha256sum kali-$1-odroidc2.img.xz > ${basedir}/kali-$1-odroidc2.img.xz.sha256sum
 fi
