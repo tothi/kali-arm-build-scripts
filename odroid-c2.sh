@@ -56,10 +56,18 @@ mirror=http.kali.org
 mkdir -p ${basedir}
 cd ${basedir}
 
-# create the rootfs - not much to modify here, except maybe the hostname.
-debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali
+# fetch the latest kali-rollig debootstrap script
+# (in order to work with other distros than kali)
+curl -s 'http://git.kali.org/gitweb/?p=packages/debootstrap.git;a=blob_plain;f=scripts/kali;hb=refs/heads/kali/master' > kali-debootstrap
 
-cp /usr/bin/qemu-aarch64-static kali-$architecture/usr/bin/
+# create the rootfs - not much to modify here, except maybe the hostname.
+#debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali
+
+# use the downloaded kali-debootstrap script
+debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali ./kali-debootstrap
+rm -f ./kali-debootstrap
+
+cp /usr/bin/qemu-aarch64 kali-$architecture/usr/bin/
 
 LANG=C chroot kali-$architecture /debootstrap/debootstrap --second-stage
 cat << EOF > kali-$architecture/etc/apt/sources.list
