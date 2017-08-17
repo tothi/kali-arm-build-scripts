@@ -67,7 +67,7 @@ curl -s 'http://git.kali.org/gitweb/?p=packages/debootstrap.git;a=blob_plain;f=s
 debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http://$mirror/kali ./kali-debootstrap
 rm -f ./kali-debootstrap
 
-cp /usr/bin/qemu-aarch64 kali-$architecture/usr/bin/
+cp /usr/bin/qemu-aarch64* kali-$architecture/usr/bin/
 
 LANG=C chroot kali-$architecture /debootstrap/debootstrap --second-stage
 cat << EOF > kali-$architecture/etc/apt/sources.list
@@ -388,9 +388,9 @@ touch .scmversion
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
 patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/kali-wifi-injection-3.14.patch
-# Patches for misc fixes
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/0001-Bluetooth-allocate-static-minor-for-vhci.patch
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/0002-KEYS-Fix-keyring-ref-leak-in-join_session_keyring.patch
+# Patches for misc fixes -- already included in the kernel
+#patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/0001-Bluetooth-allocate-static-minor-for-vhci.patch
+#patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/0002-KEYS-Fix-keyring-ref-leak-in-join_session_keyring.patch
 cp ${basedir}/../kernel-configs/odroid-c2.config .config
 cp .config ../odroid-c2.config
 cp -a ${basedir}/root/usr/src/kernel ${basedir}/
