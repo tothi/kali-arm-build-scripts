@@ -525,8 +525,8 @@ cp /usr/bin/qemu-aarch64-static ${basedir}/root/usr/bin
 cp /usr/bin/qemu-arm*-static ${basedir}/root/usr/bin
 cat << EOF > ${basedir}/root/create-initrd
 #!/bin/bash
-update-initramfs -c -k 3.14.29
-mkimage -A arm64 -O linux -T ramdisk -C none -a 0 -e 0 -n "uInitrd" -d /boot/initrd.img-3.14.29 /boot/uInitrd
+update-initramfs -c -k 3.14.79
+mkimage -A arm64 -O linux -T ramdisk -C none -a 0 -e 0 -n "uInitrd" -d /boot/initrd.img-3.14.79 /boot/uInitrd
 rm -f /create-initrd
 rm -f /usr/bin/qemu-*
 EOF
@@ -556,9 +556,9 @@ kpartx -dv $loopdevice
 
 mkdir -p ${basedir}/u-boot
 cd ${basedir}/u-boot
-wget http://odroid.in/mirror/dn.odroid.com/S905/BootLoader/ODROID-C2/c2_bootloader.tar.gz
-tar -xf c2_bootloader.tar.gz
-cd c2_bootloader
+wget https://odroid.in/mirror/dn.odroid.com/S905/BootLoader/ODROID-C2/c2_boot_release_ubuntu.tar.gz
+tar -xf c2_boot_release_ubuntu.tar.gz
+cd c2_boot_release_ubuntu
 sh sd_fusing.sh $loopdevice
 cd ${basedir}
 
