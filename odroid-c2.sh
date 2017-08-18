@@ -558,7 +558,7 @@ mkdir -p ${basedir}/u-boot
 cd ${basedir}/u-boot
 wget https://odroid.in/mirror/dn.odroid.com/S905/BootLoader/ODROID-C2/c2_boot_release_ubuntu.tar.gz
 tar -xf c2_boot_release_ubuntu.tar.gz
-cd c2_boot_release_ubuntu
+cd sd_fuse
 sh sd_fusing.sh $loopdevice
 cd ${basedir}
 
