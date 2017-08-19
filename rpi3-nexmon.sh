@@ -58,7 +58,7 @@ debootstrap --foreign --arch $architecture kali-rolling kali-$architecture http:
 rm -f ./kali-debootstrap
 
 # check for /usr/local/bin too, and register binfmt arm (if not registered)
-cp /usr/bin/qemu-arm-static kali-$architecture/usr/bin/ || \
+cp /usr/bin/qemu-arm* kali-$architecture/usr/bin/ || \
     ( mkdir -p kali-$architecture/usr/local/bin ; \
       cp /usr/local/bin/qemu-arm-static kali-$architecture/usr/local/bin/ ; \
       [ -f /proc/sys/fs/binfmt_misc/arm ] ||\
